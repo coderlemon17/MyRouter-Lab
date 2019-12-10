@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../Example/../HAL/include/router_hal.h
+stdint.h
+-
+stdlib.h
+-
+arpa/inet.h
+-
+arpa/inet.h
+-
+arpa/inet.h
+-
+
+/home/lemon/Workspace/2019_network/Router-Lab/Example/capture.cpp
+router_hal.h
+/home/lemon/Workspace/2019_network/Router-Lab/Example/router_hal.h
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+

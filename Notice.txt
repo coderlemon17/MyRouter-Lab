@@ -1,0 +1,27 @@
+1:
+特别地，由于 Linux/macOS 后端需要配置 interface 的名字，默认情况下采用的是 `eth1-4`（macOS 则是 `en0-3`） 的命名，如果与实际的不符（可以采用 `ifconfig` 或者 `ip a` 命令查看），可以直接修改 `HAL/src/linux/platform/standard.h`（macOS 则是 `HAL/src/macOS/router_hal.cpp`） 或者修改 `HAL/src/linux/platform/testing.h` 并在编译选项中打开 `-DHAL_PLATFORM_TESTING` 进行配置。如果配置不正确，可能会出现一些接口永远收不到，也发不出数据的情况。
+
+2:
+为了易于调试，HAL 没有实现 ARP 表的老化，你可以自己在代码中实现，并不困难。
+
+3:
+ip link set $interface down
+
+4:
+ip netns add net1
+ip netns add net2
+ip link add eth1 type veth peer name eth2
+ip link set eth1 netns net1
+ip link set eth2 netns net2
+ip netns exec net1 ip link set eth1 up
+ip netns exec net2 ip link set eth2 up
+ip netns exec net1 ip addr add 10.1.1.1/24 dev eth1
+ip netns exec net2 ip addr add 10.1.1.2/24 dev eth2
+
+ip netns exec net0 bash
+
+
+5:
+cmake .. -DBACKEND=Linux
+make router_hal
+make
