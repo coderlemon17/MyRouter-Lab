@@ -10,14 +10,18 @@ extern bool query(uint32_t addr, uint32_t *nexthop, uint32_t *if_index);
 char buffer[1024];
 
 int main(int argc, char *argv[]) {
-  uint32_t addr, len, if_index, nexthop;
+  uint32_t addr, len, if_index, nexthop, m;
   char tmp;
   while (fgets(buffer, sizeof(buffer), stdin)) {
     // cout << "I" << endl;
     if (buffer[0] == 'I') {
       sscanf(buffer, "%c,%x,%d,%d,%x", &tmp, &addr, &len, &if_index, &nexthop);
+
+      m = 0x0;
+
       RoutingTableEntry entry = {
-          .addr = addr, .len = len, .if_index = if_index, .nexthop = nexthop};
+          .addr = addr, .len = len, .if_index = if_index, .nexthop = nexthop, .metric = m};
+      // cout << "FU" << entry.addr << " " << entry.len << endl;
       update(true, entry);
       // cout << "I" << endl;
     } else if (buffer[0] == 'D') {

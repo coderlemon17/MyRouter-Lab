@@ -152,7 +152,7 @@ bool disassemble(const uint8_t *packet, uint32_t len, RipPacket *output) {
     }
     // cout << "here";
 
-    re.addr = htonl(ip);
+    re.addr = htonl(ip); // 大端口序
     re.mask = htonl(sm);
     re.nexthop = htonl(nh);
     re.metric = htonl(me);
@@ -168,34 +168,62 @@ bool disassemble(const uint8_t *packet, uint32_t len, RipPacket *output) {
  * @brief 从 RipPacket 的数据结构构造出 RIP 协议的二进制格式
  * @param rip 一个 RipPacket 结构体
  * @param buffer 一个足够大的缓冲区，你要把 RIP 协议的数据写进去
+ * @param out_if_addr the address of the interface where RIP packet will be sent from (horizon split) // big endian
  * @return 写入 buffer 的数据长度
  * 
  * 在构造二进制格式的时候，你需要把 RipPacket 中没有保存的一些固定值补充上，包括 Version、Zero、Address Family 和 Route Tag 这四个字段
  * 你写入 buffer 的数据长度和返回值都应该是四个字节的 RIP 头，加上每项 20 字节。
  * 需要注意一些没有保存在 RipPacket 结构体内的数据的填写。
  */
-uint32_t assemble(const RipPacket *rip, uint8_t *buffer) {
+uint32_t assemble(const RipPacket *rip, uint8_t *buffer, uint32_t out_if_addr) {
   // TODO:
   *buffer = rip->command;
   *(buffer + 1) = 0x02;
   *(buffer + 2) = 0x00;
   *(buffer + 3) = 0x00;
   uint8_t* rpstart = buffer+4;
+
+  //out_if_addr = 0xffffffff means assemble all route
+
+  uint8_t j = 0x00;
+
   for(uint8_t i = 0; i < rip->numEntries; i++){
-    uint8_t* thisRe = rpstart + i*20;
-    *(thisRe) = (rip->command == 0x01) ? 0x00 : 0x00;
-    *(thisRe + 1) = (rip->command == 0x01) ? 0x00 : 0x02;
-    *(thisRe + 2) = 0x00;
-    *(thisRe + 3) = 0x00;
-
-    for(uint8_t t = 0; t < 4; t++){
-      *(thisRe + 4 + t) = ntohl(rip->entries[i].addr) >> ((3 - t)*8);
-      *(thisRe + 4 + t + 4) = ntohl(rip->entries[i].mask) >> ((3 - t)*8);
-      *(thisRe + 4 + t + 8) = ntohl(rip->entries[i].nexthop) >> ((3 - t)*8);
-      *(thisRe + 4 + t + 12) = ntohl(rip->entries[i].metric) >> ((3 - t)*8);
+    // cout << "Out_if: " << hex << setw(8) << ntohl(out_if_addr) << endl;
+    // cout << hex << setw(8) << (ntohl(rip->entries[i].nexthop)) << endl;
+    // cout << hex << setw(8) << (ntohl(out_if_addr) & 0xffffff00) << endl;
+    // cout << ((ntohl(rip->entries[i].nexthop) & ntohl(rip->entries[i].mask)) != (ntohl(out_if_addr) & 0xffffff00)) << endl;
+    uint32_t nHop;
+    bool directLine = false;
+    if(rip->entries[i].nexthop == 0){
+      nHop = ntohl(rip->entries[i].addr);
+      directLine = true;
+    }else{
+      nHop = ntohl(rip->entries[i].nexthop);
     }
+    // cout << hex << setw(8) << (ntohl(nHop)) << endl;
+    if((nHop & 0xffffff00) != (ntohl(out_if_addr) & 0xffffff00)){
+      //j: actual number of rip entry in IP packet
+      uint8_t* thisRe = rpstart + j*20;
+      *(thisRe) = (rip->command == 0x01) ? 0x00 : 0x00;
+      *(thisRe + 1) = (rip->command == 0x01) ? 0x00 : 0x02;
+      *(thisRe + 2) = 0x00;
+      *(thisRe + 3) = 0x00;
 
+      uint32_t metric = ntohl(rip->entries[i].metric);
+
+      if(directLine){
+        nHop = ntohl(out_if_addr) & 0xffffff00;
+      }
+      
+      for(uint8_t t = 0; t < 4; t++){
+        *(thisRe + 4 + t) = ntohl(rip->entries[i].addr) >> ((3 - t)*8);
+        *(thisRe + 4 + t + 4) = ntohl(rip->entries[i].mask) >> ((3 - t)*8);
+        *(thisRe + 4 + t + 8) =  nHop >> ((3 - t)*8);
+        *(thisRe + 4 + t + 12) = (metric >> ((3 - t)*8));
+      }
+
+      j++;
+    }
   }
-
-  return 4 + 20*rip->numEntries;
+  return 4 + 20*j;
 }

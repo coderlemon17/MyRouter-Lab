@@ -1,4 +1,4 @@
-# Install script for directory: /home/lemon/Workspace/2019_network/Router-Lab/HAL
+# Install script for directory: /home/lemon/Workspace/2019_network/MyRouter-Lab/HAL
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

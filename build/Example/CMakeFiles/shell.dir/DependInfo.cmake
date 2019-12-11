@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/lemon/Workspace/2019_network/Router-Lab/Example/shell.cpp" "/home/lemon/Workspace/2019_network/Router-Lab/build/Example/CMakeFiles/shell.dir/shell.cpp.o"
+  "/home/lemon/Workspace/2019_network/MyRouter-Lab/Example/shell.cpp" "/home/lemon/Workspace/2019_network/MyRouter-Lab/build/Example/CMakeFiles/shell.dir/shell.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
@@ -21,7 +21,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
 
 # Targets to which this target links.
 set(CMAKE_TARGET_LINKED_INFO_FILES
-  "/home/lemon/Workspace/2019_network/Router-Lab/build/HAL/CMakeFiles/router_hal.dir/DependInfo.cmake"
+  "/home/lemon/Workspace/2019_network/MyRouter-Lab/build/HAL/CMakeFiles/router_hal.dir/DependInfo.cmake"
   )
 
 # Fortran module output directory.

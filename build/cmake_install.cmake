@@ -1,4 +1,4 @@
-# Install script for directory: /home/lemon/Workspace/2019_network/Router-Lab
+# Install script for directory: /home/lemon/Workspace/2019_network/MyRouter-Lab
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,8 +39,8 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/lemon/Workspace/2019_network/Router-Lab/build/HAL/cmake_install.cmake")
-  include("/home/lemon/Workspace/2019_network/Router-Lab/build/Example/cmake_install.cmake")
+  include("/home/lemon/Workspace/2019_network/MyRouter-Lab/build/HAL/cmake_install.cmake")
+  include("/home/lemon/Workspace/2019_network/MyRouter-Lab/build/Example/cmake_install.cmake")
 
 endif()
 
@@ -52,5 +52,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/lemon/Workspace/2019_network/Router-Lab/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/lemon/Workspace/2019_network/MyRouter-Lab/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

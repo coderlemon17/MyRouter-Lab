@@ -7,7 +7,7 @@
 using namespace std;
 
 extern bool disassemble(const uint8_t *packet, uint32_t len, RipPacket *output);
-extern uint32_t assemble(const RipPacket *rip, uint8_t *buffer);
+extern uint32_t assemble(const RipPacket *rip, uint8_t *buffer, uint32_t out_if_addr);
 uint8_t buffer[1024];
 uint8_t packet[2048];
 RipPacket rip;
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
       for (int i = 0;i < rip.numEntries;i++) {
         printf("%08x %08x %08x %08x\n", rip.entries[i].addr, rip.entries[i].mask, rip.entries[i].nexthop, rip.entries[i].metric);
       }
-      uint32_t len = assemble(&rip, buffer);
+      uint32_t len = assemble(&rip, buffer, 0xffffffff);
       
       // cout << "len: " << len << endl;
 

@@ -10,18 +10,65 @@ ip link set $interface down
 4:
 ip netns add net1
 ip netns add net2
-ip link add eth1 type veth peer name eth2
-ip link set eth1 netns net1
+ip netns add net3
+ip link add eth0 type veth peer name eth1
+ip link add eth2 type veth peer name eth3
+ip link set eth0 netns net1
+ip link set eth1 netns net2
 ip link set eth2 netns net2
-ip netns exec net1 ip link set eth1 up
+ip link set eth3 netns net3
+ip netns exec net1 ip link set eth0 up
+ip netns exec net2 ip link set eth1 up
 ip netns exec net2 ip link set eth2 up
-ip netns exec net1 ip addr add 10.1.1.1/24 dev eth1
-ip netns exec net2 ip addr add 10.1.1.2/24 dev eth2
+ip netns exec net3 ip link set eth3 up
+ip netns exec net1 ip addr add 192.168.3.1/24 dev eth0
+ip netns exec net3 ip addr add 192.168.4.2/24 dev eth3
 
-ip netns exec net0 bash
+ip netns exec net2 ip addr add 192.168.3.2/24 dev eth1
+ip netns exec net2 ip addr add 192.168.4.1/24 dev eth2
+
+ip netns exec net1 bash
 
 
 5:
 cmake .. -DBACKEND=Linux
 make router_hal
 make
+
+6:
+224.0.0.9 是 RIPv2的组播地址
+
+7:
+systemctl start bird
+journalctl -f -u bird
+
+bird -d -c /etc/bird.conf
+-f : 在前台运行
+
+router id 192.168.3.1 ; # 随便写一个,保证唯一性即可
+protocol device {
+}
+ 
+protocol kernel {
+    learn;
+    persist off;
+    export all;
+}
+
+protocol static {
+    route 1.2.3.4/32 via "eth0";
+}
+protocol rip {
+    import all;
+    export all;
+    debug all;
+    interface "eth0"{
+    version 2;
+    update time 5;
+    };
+}
+
+
+bird -d -c ./net1_bird.conf -P ./net1_pid -s ./net1_bird.socket -f
+
+
