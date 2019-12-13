@@ -250,7 +250,7 @@ void assembleRipPacket(RipPacket* ripPacket){
     //直连
     ripPacket->entries[count].nexthop = point->re->nexthop;
 
-    ripPacket->entries[count].metric = htonl(point->re->metric + 1);
+    ripPacket->entries[count].metric = htonl(point->re->metric);
 
     // print32("len", point->re->len);
     // print32("mask", ~((0x00000001 << (32 - point->re->len))-1));
