@@ -8,26 +8,39 @@
 ip link set $interface down
 
 4:
+ip netns add net0
 ip netns add net1
 ip netns add net2
 ip netns add net3
-ip link add eth0 type veth peer name eth1
-ip link add eth2 type veth peer name eth3
-ip link set eth0 netns net1
+ip netns add net4
+ip link add PC1R1 type veth peer name R1PC1
+ip link add R1R2 type veth peer name eth1
+ip link add eth2 type veth peer name R3R2
+ip link add R3PC2 type veth peer name PC2R3
+ip link set PC1R1 netns net0
+ip link set R1PC1 netns net1
+ip link set R1R2 netns net1
 ip link set eth1 netns net2
 ip link set eth2 netns net2
-ip link set eth3 netns net3
-ip netns exec net1 ip link set eth0 up
+ip link set R3R2 netns net3
+ip link set R3PC2 netns net3
+ip link set PC2R3 netns net4
+ip netns exec net0 ip link set PC1R1 up
+ip netns exec net1 ip link set R1PC1 up
+ip netns exec net1 ip link set R1R2 up
 ip netns exec net2 ip link set eth1 up
 ip netns exec net2 ip link set eth2 up
-ip netns exec net3 ip link set eth3 up
-ip netns exec net1 ip addr add 192.168.3.1/24 dev eth0
-ip netns exec net3 ip addr add 192.168.4.2/24 dev eth3
+ip netns exec net3 ip link set R3R2 up
+ip netns exec net3 ip link set R3PC2 up
+ip netns exec net4 ip link set PC2R3 up
+ip netns exec net0 ip addr add 192.168.1.2/24 dev PC1R1
+ip netns exec net1 ip addr add 192.168.1.1/24 dev R1PC1
+ip netns exec net1 ip addr add 192.168.3.1/24 dev R1R2
+ip netns exec net3 ip addr add 192.168.4.2/24 dev R3R2
+ip netns exec net3 ip addr add 192.168.5.2/24 dev R3PC2
+ip netns exec net4 ip addr add 192.168.5.1/24 dev PC2R3
 
-ip netns exec net2 ip addr add 192.168.3.2/24 dev eth1
-ip netns exec net2 ip addr add 192.168.4.1/24 dev eth2
-
-ip netns exec net1 bash
+sudo ip netns exec net1 bash
 
 
 5:
@@ -70,5 +83,11 @@ protocol rip {
 
 
 bird -d -c ./net1_bird.conf -P ./net1_pid -s ./net1_bird.socket -f
+
+8:
+sysctl -w net.ipv4.ip_forward=1
+
+8:
+ip r add default via 192.168.1.1 dev PC1R1
 
 

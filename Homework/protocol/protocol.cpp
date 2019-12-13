@@ -212,7 +212,7 @@ uint32_t assemble(const RipPacket *rip, uint8_t *buffer, uint32_t out_if_addr) {
       uint32_t metric = ntohl(rip->entries[i].metric);
 
       if(directLine){
-        nHop = ntohl(out_if_addr) & 0xffffff00;
+        nHop = ntohl(out_if_addr);
       }
       
       for(uint8_t t = 0; t < 4; t++){
