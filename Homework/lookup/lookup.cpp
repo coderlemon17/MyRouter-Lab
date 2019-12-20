@@ -176,7 +176,6 @@ bool query(uint32_t addr, uint32_t *nexthop, uint32_t *if_index) {
   uint32_t max_match_length = 0x00000000;
   uint32_t min_match_metric = 0xffffffff;
   RT* max_match_entry = NULL;
-v 
   RT* point = Mstart; 
 
   while(point != NULL){
