@@ -315,18 +315,21 @@ int main(int argc, char *argv[]) {
               rip.entries[i].nexthop = src_addr;
             }
 
-            for(int j = 0; j < N_IFACE_ON_BOARD; j++){
 
+            bool dr = false;
+            for(int j = 0; j < N_IFACE_ON_BOARD; j++){
               if((ntohl(rip.entries[i].addr) & 0xffffff00) == (ntohl(addrs[j]) & 0xffffff00)){
-                rip.entries[i].nexthop = 0;
+                dr = true;
                 break;
               }
             }
 
-            RoutingTableEntry entry = {
+            if(!dr){
+              RoutingTableEntry entry = {
               .addr = rip.entries[i].addr, .len = len, .if_index = if_index, .nexthop = rip.entries[i].nexthop, .metric = ntohl(rip.entries[i].metric) + 1};
 
-            update(true, entry);
+              update(true, entry);
+            }
           }
         }
       }
