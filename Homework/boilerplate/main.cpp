@@ -317,6 +317,7 @@ int main(int argc, char *argv[]) {
 
             RoutingTableEntry entry = {
               .addr = rip.entries[i].addr, .len = len, .if_index = if_index, .nexthop = rip.entries[i].nexthop, .metric = ntohl(rip.entries[i].metric) + 1};
+              
             update(true, entry);
           }
         }
