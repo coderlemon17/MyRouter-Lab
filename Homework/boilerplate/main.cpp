@@ -316,7 +316,7 @@ int main(int argc, char *argv[]) {
             }
 
             for(int j = 0; j < N_IFACE_ON_BOARD; j++){
-              if((ntohl(rip.entries[i].nexthop) & 0xffffff00) == ntohl(addrs[i]) & 0xffffff00){
+              if((ntohl(rip.entries[i].nexthop) & 0xffffff00) == ntohl(addrs[j]) & 0xffffff00){
                 rip.entries[i].nexthop = 0;
                 break;
               }
