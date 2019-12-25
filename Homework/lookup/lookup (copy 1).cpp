@@ -22,7 +22,6 @@ void print32(string str, uint32_t t){
   cout << " " << hex << setw(8) << setfill('0') << t << endl;
 } 
 
-
 /*
   RoutingTable Entry 的定义如下：
   typedef struct {
@@ -63,20 +62,15 @@ void update(bool insert, RoutingTableEntry entry) {
   cout << " metric: " << entry.metric << endl;
 
   
-  for(auto it = myTable.begin(); it != myTable.end();){
+  for(iterator it = myTable.begin(); it != myTable.end(); it++){
     if((*it).len == entry.len && (*it).addr == entry.addr && (*it).nexthop == entry.nexthop){
-      myTable.erase(it++);
-    }else{
-      it++;
+      myTable.erase(it);
     }
   }
 
   if(insert && entry.metric < MAX_HOP){
     myTable.push_front(new MyRT(&entry));
   }
-
-
-  cout << "FINISH UPDATE\n";
 }
 
 //uint32_t mask[33]{0xffffffff, 0x7fffffff, 0x3fffffff, 0x1fffffff, 0x0fffffff, 0x07ffffff, 0x03ffffff, 0x01ffffff, 0x00ffffff, 0x007fffff, 0x003fffff, 0x001fffff, 0x000fffff, 0x0007ffff, 0x0003ffff, 0x0001ffff, 0x0000ffff, 0x00007fff, 0x00003fff, 0x00001fff, 0x00000fff, 0x000007ff, 0x000003ff, 0x000001ff, 0x000000ff, 0x0000007f, 0x0000003f, 0x0000001f, 0x0000000f, 0x00000007, 0x00000003, 0x00000001};
@@ -103,16 +97,16 @@ bool query(uint32_t addr, uint32_t *nexthop, uint32_t *if_index) {
 
   uint32_t max_match_length = 0x00000000;
   uint32_t min_match_metric = 0xffffffff;
-  auto max_match_entry = myTable.begin();
+  iterator max_match_entry = NULL;
 
-  for(auto it = myTable.begin(); it != myTable.end(); it++){
-    uint32_t tmpt = (*it).len == 32 ? 0xffffffff : ((1 << (*it).len) - 1);
+  for(iterator it = myTable.begin(); it != myTable.end(); it++){
+    uint32_t tmpt = point->re->len == 32 ? 0xffffffff : ((1 << point->re->len) - 1);
 
     if( ((~(ntohl((*it).addr) ^ sAddr)) >> (32-(*it).len)) == tmpt){
       find = true;
       // cout << "i: " << i << endl;
-      // cout << (*it).len << endl;
-      // cout << ((*it).len > max_match_length) << endl;
+      // cout << point->re->len << endl;
+      // cout << (point->re->len > max_match_length) << endl;
       
       if((*it).len > max_match_length){
         max_match_length = (*it).len;
@@ -138,14 +132,16 @@ bool query(uint32_t addr, uint32_t *nexthop, uint32_t *if_index) {
 
 
 void pringRouteTable(){
+  RT* point = Mstart;
   cout << "MY ROUTE TABLE\n";
+  while(point != NULL){
+    cout << hex << setw(8) << setfill('0') << ntohl(point->re->addr);
+    cout << "/" << dec << setw(2) << point->re->len << " next hop: ";
+    cout << hex << setw(8) << setfill('0') << ntohl(point->re->nexthop);
+    cout << " via " << point->re->if_index;
+    cout << " metric: " << point->re->metric << endl;
 
-  for(auto it = myTable.begin(); it != myTable.end(); it++){
-    cout << hex << setw(8) << setfill('0') << ntohl((*it).addr);
-    cout << "/" << dec << setw(2) << (*it).len << " next hop: ";
-    cout << hex << setw(8) << setfill('0') << ntohl((*it).nexthop);
-    cout << " via " << (*it).if_index;
-    cout << " metric: " << (*it).metric << endl;
+    point = point->next;
   }
 }
 

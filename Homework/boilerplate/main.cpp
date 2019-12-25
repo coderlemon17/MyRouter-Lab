@@ -7,6 +7,7 @@
 #include <string.h>
 #include <iostream>
 #include <iomanip>
+#include <list>
 using namespace std;
 
 extern bool validateIPChecksum(uint8_t *packet, size_t len);
@@ -18,6 +19,8 @@ extern bool disassemble(const uint8_t *packet, uint32_t len, RipPacket *output);
 extern uint32_t assemble(const RipPacket *rip, uint8_t *buffer, uint32_t out_if_addr);
 extern void assembleRipPacket(RipPacket* ripPacket);
 extern void pringRouteTable();
+
+extern list<MyRT> myTable;
 
 const int BUFFER_SIZE = 2048;
 
@@ -87,73 +90,93 @@ int main(int argc, char *argv[]) {
 
 
       for(int i = 0; i < N_IFACE_ON_BOARD; i++){
-        memset(packet, 0, BUFFER_SIZE);
 
-        RipPacket rip;
-        //assemble
-        //TODO
-        assembleRipPacket(&rip);
+        bool needMorePacket = true;
+        auto it = myTable.begin();
 
-        // IP
-        packet[0] = 0x45;
-        //DSF
-        packet[1] = 0xc0;
-        //Total Length
-        //ID
-        packet[4] = 0x00;
-        packet[5] = 0x00;
-        //Flag
-        packet[6] = 0x00;
-        packet[7] = 0x00;
-        //TTL
-        packet[8] = 0x01;
-        //Protocal
-        packet[9] = 0x11;
-        //checksum
-        //TODO:wait until IP head is finish
-        packet[10] = 0x00;
-        packet[11] = 0x00;
+        while(needMorePacket){
+          uint32_t count = 0;
 
-        //source ip
-        packet[12] = addrs[i] & 0x000000ff;
-        packet[13] = (addrs[i] & 0x0000ff00) >> 8;
-        packet[14] = (addrs[i] & 0x00ff0000) >> 16;
-        packet[15] = (addrs[i] & 0xff000000) >> 24;
+          RipPacket rip;
+          rip.command = 2;
 
-        //des ip
-        packet[16] = 0xe0;
-        packet[17] = 0x00;
-        packet[18] = 0x00;
-        packet[19] = 0x09;
+          while(it != myTable.end() && count < 0x00000019){
+            rip.entries[count].addr = (*it).addr;
+            rip.entries[count].mask = htonl((*it).len == 0 ? 0x00000000 : ~((0x00000001 << (32 - (*it).len))-1)); 
+            rip.entries[count].nexthop = (*it).nexthop;
+            rip.entries[count].metric = htonl((*it).metric);
+            count++;
+            it++;
+          }
+          rip.numEntries = count;
 
-        // ...
-        // UDP
-        // port = 520
-        packet[20] = 0x02;
-        packet[21] = 0x08;
-        packet[22] = 0x02;
-        packet[23] = 0x08;
-        packet[26] = 0x00;
-        packet[27] = 0x00;
-        // ...
-        // RIP
-        //split horizon
-        size_t length = (size_t) assemble(&rip, &packet[20+8], addrs[i]);
-        
-        //Total length in IP
-        uint16_t len = 20 + 8 + length;
-        packet[2] = len >> 8;
-        packet[3] = len & 0x00ff;
-        len -= 20;
-        packet[24] = len >> 8;
-        packet[25] = len & 0x00ff;
-        //checksum
-        setIPChecksum(packet);
-        // setUDPChecksum(&packet[20]);
+          if(it == myTable.end()){
+            needMorePacket = false;
+          }
 
-        macaddr_t des_mac = {0x01, 0x00, 0x5e, 0x00, 0x00, 0x09};
+          memset(packet, 0, BUFFER_SIZE);
 
-        HAL_SendIPPacket(i, packet, length+20+8, des_mac);
+          // IP
+          packet[0] = 0x45;
+          //DSF
+          packet[1] = 0xc0;
+          //Total Length
+          //ID
+          packet[4] = 0x00;
+          packet[5] = 0x00;
+          //Flag
+          packet[6] = 0x00;
+          packet[7] = 0x00;
+          //TTL
+          packet[8] = 0x01;
+          //Protocal
+          packet[9] = 0x11;
+          //checksum
+          //TODO:wait until IP head is finish
+          packet[10] = 0x00;
+          packet[11] = 0x00;
+
+          //source ip
+          packet[12] = addrs[i] & 0x000000ff;
+          packet[13] = (addrs[i] & 0x0000ff00) >> 8;
+          packet[14] = (addrs[i] & 0x00ff0000) >> 16;
+          packet[15] = (addrs[i] & 0xff000000) >> 24;
+
+          //des ip
+          packet[16] = 0xe0;
+          packet[17] = 0x00;
+          packet[18] = 0x00;
+          packet[19] = 0x09;
+
+          // ...
+          // UDP
+          // port = 520
+          packet[20] = 0x02;
+          packet[21] = 0x08;
+          packet[22] = 0x02;
+          packet[23] = 0x08;
+          packet[26] = 0x00;
+          packet[27] = 0x00;
+          // ...
+          // RIP
+          //split horizon
+          size_t length = (size_t) assemble(&rip, &packet[20+8], addrs[i]);
+          
+          //Total length in IP
+          uint16_t len = 20 + 8 + length;
+          packet[2] = len >> 8;
+          packet[3] = len & 0x00ff;
+          len -= 20;
+          packet[24] = len >> 8;
+          packet[25] = len & 0x00ff;
+          //checksum
+          setIPChecksum(packet);
+          // setUDPChecksum(&packet[20]);
+
+          macaddr_t des_mac = {0x01, 0x00, 0x5e, 0x00, 0x00, 0x09};
+
+          HAL_SendIPPacket(i, packet, length+20+8, des_mac);
+        }
       }
       printf("30s Timer\n");
       pringRouteTable();
@@ -228,70 +251,91 @@ int main(int argc, char *argv[]) {
           // 3a.3 request, ref. RFC2453 3.9.1
           // only need to respond to whole table requests in the lab
           // TODO: fill resp
-          RipPacket resp;
-          assembleRipPacket(&resp);
 
-          // assemble
-          memset(output, 0, BUFFER_SIZE);
-          // IP
-          output[0] = 0x45;
-          //DSF
-          output[1] = 0xc0;
-          //Total Length
-          //ID
-          output[4] = 0x00;
-          output[5] = 0x00;
-          //Flag
-          output[6] = 0x00;
-          output[7] = 0x00;
-          //TTL
-          output[8] = 0x40;
-          //Protocal
-          output[9] = 0x11;
-          //checksum
-          //TODO:wait until IP head is finish
-          output[10] = 0x00;
-          output[11] = 0x00;
+          bool needMorePacket = true;
+          auto it = myTable.begin();
 
-          //source ip
-          output[12] = addrs[if_index] & 0x000000ff;
-          output[13] = (addrs[if_index] & 0x0000ff00) >> 8;
-          output[14] = (addrs[if_index] & 0x00ff0000) >> 16;
-          output[15] = (addrs[if_index] & 0xff000000) >> 24;
+          while(needMorePacket){
+            uint32_t count = 0;
 
-          //des ip
-          output[16] = src_addr & 0x000000ff;
-          output[17] = (src_addr & 0x0000ff00) >> 8;
-          output[18] = (src_addr & 0x00ff0000) >> 16;
-          output[19] = (src_addr & 0xff000000) >> 24;
+            RipPacket resp;
+            resp.command = 2;
 
-          // ...
-          // UDP
-          // port = 520
-          output[20] = 0x02;
-          output[21] = 0x08;
-          output[22] = 0x02;
-          output[23] = 0x08;
-          output[26] = 0x00;
-          output[27] = 0x00;
-          // ...
-          // RIP
-          uint32_t rip_len = assemble(&resp, &output[20 + 8], addrs[if_index]);
-          // checksum calculation for ip and udp
-          // if you don't want to calculate udp checksum, set it to zero
-          // send it back
-          
-          //Total length in IP
-          uint16_t len = 20 + 8 + rip_len;
-          output[2] = len >> 8;
-          output[3] = len & 0x00ff;
-          len -= 20;
-          output[24] = len >> 8;
-          output[25] = len & 0x00ff;
-          //checksum
-          setIPChecksum(output);
+            while(it != myTable.end() && count < 0x00000019){
+              resp.entries[count].addr = (*it).addr;
+              resp.entries[count].mask = htonl((*it).len == 0 ? 0x00000000 : ~((0x00000001 << (32 - (*it).len))-1)); 
+              resp.entries[count].nexthop = (*it).nexthop;
+              resp.entries[count].metric = htonl((*it).metric);
+              count++;
+              it++;
+            }
+            resp.numEntries = count;
 
-          HAL_SendIPPacket(if_index, output, rip_len + 20 + 8, src_mac);
+            if(it == myTable.end()){
+              needMorePacket = false;
+            }
+            // assemble
+            memset(output, 0, BUFFER_SIZE);
+            // IP
+            output[0] = 0x45;
+            //DSF
+            output[1] = 0xc0;
+            //Total Length
+            //ID
+            output[4] = 0x00;
+            output[5] = 0x00;
+            //Flag
+            output[6] = 0x00;
+            output[7] = 0x00;
+            //TTL
+            output[8] = 0x40;
+            //Protocal
+            output[9] = 0x11;
+            //checksum
+            //TODO:wait until IP head is finish
+            output[10] = 0x00;
+            output[11] = 0x00;
+
+            //source ip
+            output[12] = addrs[if_index] & 0x000000ff;
+            output[13] = (addrs[if_index] & 0x0000ff00) >> 8;
+            output[14] = (addrs[if_index] & 0x00ff0000) >> 16;
+            output[15] = (addrs[if_index] & 0xff000000) >> 24;
+
+            //des ip
+            output[16] = src_addr & 0x000000ff;
+            output[17] = (src_addr & 0x0000ff00) >> 8;
+            output[18] = (src_addr & 0x00ff0000) >> 16;
+            output[19] = (src_addr & 0xff000000) >> 24;
+
+            // ...
+            // UDP
+            // port = 520
+            output[20] = 0x02;
+            output[21] = 0x08;
+            output[22] = 0x02;
+            output[23] = 0x08;
+            output[26] = 0x00;
+            output[27] = 0x00;
+            // ...
+            // RIP
+            uint32_t rip_len = assemble(&resp, &output[20 + 8], addrs[if_index]);
+            // checksum calculation for ip and udp
+            // if you don't want to calculate udp checksum, set it to zero
+            // send it back
+            
+            //Total length in IP
+            uint16_t len = 20 + 8 + rip_len;
+            output[2] = len >> 8;
+            output[3] = len & 0x00ff;
+            len -= 20;
+            output[24] = len >> 8;
+            output[25] = len & 0x00ff;
+            //checksum
+            setIPChecksum(output);
+
+            HAL_SendIPPacket(if_index, output, rip_len + 20 + 8, src_mac);
+          }
         } else {
           // 3a.2 response, ref. RFC2453 3.9.2
           // update routing table

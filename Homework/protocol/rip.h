@@ -18,3 +18,4 @@ typedef struct {
   // we don't store 'zero', as it is always 0
   RipEntry entries[RIP_MAX_ENTRY];
 } RipPacket;
+
