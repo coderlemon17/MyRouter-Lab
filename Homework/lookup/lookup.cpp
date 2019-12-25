@@ -16,7 +16,7 @@ const uint32_t MAX_HOP = 0x00000010;
 void print32(string str, uint32_t t){
   cout << str;
   cout << " " << hex << setw(8) << setfill('0') << t << endl;
-}
+} 
 
 class MyRT{
   public:
