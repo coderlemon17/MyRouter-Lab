@@ -355,9 +355,11 @@ int main(int argc, char *argv[]) {
             }
             // cout << "len: " << dec << setw(2) << len << endl;
 
-            if(rip.entries[i].nexthop == 0){
-              rip.entries[i].nexthop = src_addr;
-            }
+            // if(rip.entries[i].nexthop == 0){
+            //   rip.entries[i].nexthop = src_addr;
+            // }
+
+            rip.entries[i].nexthop = src_addr;
 
 
             bool dr = false;
