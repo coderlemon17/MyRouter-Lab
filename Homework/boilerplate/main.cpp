@@ -40,8 +40,8 @@ uint8_t output[BUFFER_SIZE]{0};
 // 1: 192.168.4.1
 // 2: 10.0.2.1
 // 3: 10.0.3.1
-in_addr_t addrs[N_IFACE_ON_BOARD] = {0x0203a8c0, 0x0104a8c0, 0x0102000a,
-                                     0x0103000a};
+in_addr_t addrs[N_IFACE_ON_BOARD] = {0x0204a8c0, 0x0205a8c0, 0x0102000c,
+                                     0x0103000c};
 // 10.1.1.2
 // in_addr_t addrs[N_IFACE_ON_BOARD] = {0x0201010a, 0x0301010a, 0x0401010a,
 //                                      0x0501010a};
