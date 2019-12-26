@@ -49,18 +49,18 @@ void print32(string str, uint32_t t){
  */
 void update(bool insert, RoutingTableEntry entry) {
 
-  if(insert){
-    cout << "INSERT ";
-  }else{
-    cout << "DELETE ";
-  }
+  // if(insert){
+  //   cout << "INSERT ";
+  // }else{
+  //   cout << "DELETE ";
+  // }
 
 
-  cout << hex << setw(8) << setfill('0') << ntohl(entry.addr);
-  cout << "/" << dec << entry.len << " next hop: ";
-  cout << hex << setw(8) << setfill('0') << ntohl(entry.nexthop);
-  cout << " via " << entry.if_index;
-  cout << " metric: " << entry.metric << endl;
+  // cout << hex << setw(8) << setfill('0') << ntohl(entry.addr);
+  // cout << "/" << dec << entry.len << " next hop: ";
+  // cout << hex << setw(8) << setfill('0') << ntohl(entry.nexthop);
+  // cout << " via " << entry.if_index;
+  // cout << " metric: " << entry.metric << endl;
 
   
   for(auto it = myTable.begin(); it != myTable.end();){
@@ -76,7 +76,7 @@ void update(bool insert, RoutingTableEntry entry) {
   }
 
 
-  cout << "FINISH UPDATE\n";
+  // cout << "FINISH UPDATE\n";
 }
 
 //uint32_t mask[33]{0xffffffff, 0x7fffffff, 0x3fffffff, 0x1fffffff, 0x0fffffff, 0x07ffffff, 0x03ffffff, 0x01ffffff, 0x00ffffff, 0x007fffff, 0x003fffff, 0x001fffff, 0x000fffff, 0x0007ffff, 0x0003ffff, 0x0001ffff, 0x0000ffff, 0x00007fff, 0x00003fff, 0x00001fff, 0x00000fff, 0x000007ff, 0x000003ff, 0x000001ff, 0x000000ff, 0x0000007f, 0x0000003f, 0x0000001f, 0x0000000f, 0x00000007, 0x00000003, 0x00000001};
@@ -114,6 +114,10 @@ bool query(uint32_t addr, uint32_t *nexthop, uint32_t *if_index) {
       // cout << (*it).len << endl;
       // cout << ((*it).len > max_match_length) << endl;
       
+
+      cout << "MATCH: " << hex << ntohl((*it).addr) << endl;
+
+
       if((*it).len > max_match_length){
         max_match_length = (*it).len;
         max_match_entry = it;
