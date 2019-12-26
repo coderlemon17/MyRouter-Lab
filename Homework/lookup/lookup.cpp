@@ -125,7 +125,7 @@ bool query(uint32_t addr, uint32_t *nexthop, uint32_t *if_index) {
         max_match_entry = it;
         // cout << "?\n";
         // cout << "max" << max_match_entry << endl;
-      }else if((*it).len == max_match_length && max_match_length != 0x00000000){
+      }else if((*it).len == max_match_length){
         if((*it).metric < min_match_metric){
           min_match_metric = (*it).metric;
           max_match_entry = it;
