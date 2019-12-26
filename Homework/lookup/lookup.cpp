@@ -100,7 +100,7 @@ bool query(uint32_t addr, uint32_t *nexthop, uint32_t *if_index) {
   
   uint32_t sAddr = ntohl(addr);
 
-  cout << "QUERY: " << hex << sAddr << endl;
+  // cout << "QUERY: " << hex << sAddr << endl;
 
 
   uint32_t max_match_length = 0x00000000;
@@ -117,7 +117,7 @@ bool query(uint32_t addr, uint32_t *nexthop, uint32_t *if_index) {
       // cout << ((*it).len > max_match_length) << endl;
       
 
-      cout << "MATCH: " << hex << ntohl((*it).addr) << endl;
+      // cout << "MATCH: " << hex << ntohl((*it).addr) << endl;
 
 
       if((*it).len > max_match_length){

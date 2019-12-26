@@ -178,8 +178,8 @@ int main(int argc, char *argv[]) {
           HAL_SendIPPacket(i, packet, length+20+8, des_mac);
         }
       }
-      printf("30s Timer\n");
-      pringRouteTable();
+      // printf("30s Timer\n");
+      // pringRouteTable();
       last_time = time;
     }
 
@@ -198,7 +198,7 @@ int main(int argc, char *argv[]) {
     } else if (res < 0) {
       return res;
     } else if (res == 0) {
-      printf("Time Out\n");
+      // printf("Time Out\n");
       // Timeout
       continue;
     } else if (res > sizeof(packet)) {
@@ -208,7 +208,7 @@ int main(int argc, char *argv[]) {
 
     // 1. validate
     if (!validateIPChecksum(packet, res)) {
-      printf("Invalid IP Checksum\n");
+      // printf("Invalid IP Checksum\n");
       continue;
     }
     in_addr_t src_addr, dst_addr;
@@ -400,18 +400,18 @@ int main(int argc, char *argv[]) {
             // TODO: you might want to check ttl=0 case
             HAL_SendIPPacket(dest_if, output, res, dest_mac);
           }else{
-            printf("TTL Count To Zero\n");
+            // printf("TTL Count To Zero\n");
           }
           
         } else {
           // not found
           // you can drop it
-          printf("ARP not found for %x\n", nexthop);
+          // printf("ARP not found for %x\n", nexthop);
         }
       } else {
         // not found
         // optionally you can send ICMP Host Unreachable
-        printf("IP not found for %x\n", src_addr);
+        // printf("IP not found for %x\n", src_addr);
       }
     }
   }
